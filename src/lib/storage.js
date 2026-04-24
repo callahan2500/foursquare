@@ -81,7 +81,8 @@ function migrateV1ToV2(v1State) {
       }
     }],
     settings: {
-      theme: v1State.settings?.theme || 'dark'
+      theme: v1State.settings?.theme || 'dark',
+      hasSeenOnboarding: true
     }
   }
 }
@@ -96,6 +97,7 @@ function migrate(state) {
   // Defensive backfill for v2 data
   if (!current.settings) current.settings = { theme: 'dark' }
   if (!current.settings.theme) current.settings.theme = 'dark'
+  if (current.settings.hasSeenOnboarding === undefined) current.settings.hasSeenOnboarding = true
   if (!Array.isArray(current.matrices)) current.matrices = []
 
   current.matrices = current.matrices.map(m => {

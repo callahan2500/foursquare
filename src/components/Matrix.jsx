@@ -17,7 +17,8 @@ import UnsortedTray from './UnsortedTray'
 import CsvImport from './CsvImport'
 import SearchFilterBar from './SearchFilterBar'
 import BulkActionBar from './BulkActionBar'
-import { QUADRANTS, QUADRANT_IDS, EMPTY_MESSAGES, EFFORT_ORDER, SORT_MODES } from '../constants'
+import OnboardingBanner from './OnboardingBanner'
+import { QUADRANTS, QUADRANT_IDS, EMPTY_MESSAGES, QUADRANT_TOOLTIPS, EFFORT_ORDER, SORT_MODES } from '../constants'
 
 function sortTasks(tasks, mode) {
   if (mode === 'manual' || !mode) {
@@ -79,6 +80,7 @@ function QuadrantColumn({ quadrantId, tasks, completedTasks, actions, overdueCou
         <div className="quadrant-title-group">
           <span className="quadrant-label">{quadrant.label}</span>
           <span className="quadrant-meaning">{quadrant.meaning}</span>
+          <span className="quadrant-info-icon" data-tooltip={QUADRANT_TOOLTIPS[quadrantId]}>i</span>
         </div>
         <div className="quadrant-header-right">
           <select
@@ -161,7 +163,7 @@ function QuadrantColumn({ quadrantId, tasks, completedTasks, actions, overdueCou
   )
 }
 
-function Matrix({ tasks, actions, matrixSettings, matrixName, matrixId, focusTimer }) {
+function Matrix({ tasks, actions, matrixSettings, matrixName, matrixId, focusTimer, hasSeenOnboarding }) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [defaultQuadrant, setDefaultQuadrant] = useState('UNSORTED')
@@ -238,10 +240,14 @@ function Matrix({ tasks, actions, matrixSettings, matrixName, matrixId, focusTim
     if (activeTask.quadrant !== targetQuadrant) {
       actions.moveTask(taskId, targetQuadrant)
     } else if (active.id !== over.id && over.data?.current?.task) {
-      const overTask = over.data.current.task
-      actions.reorderTasks(taskId, targetQuadrant, overTask.position)
+      // Only allow reordering within a quadrant if sort mode is manual
+      const qSortMode = sortModes[targetQuadrant] || 'manual'
+      if (qSortMode === 'manual') {
+        const overTask = over.data.current.task
+        actions.reorderTasks(taskId, targetQuadrant, overTask.position)
+      }
     }
-  }, [tasks, actions])
+  }, [tasks, actions, sortModes])
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null)
@@ -383,6 +389,11 @@ function Matrix({ tasks, actions, matrixSettings, matrixName, matrixId, focusTim
             )}
           </div>
         </div>
+
+        {!hasSeenOnboarding && (
+          <OnboardingBanner onDismiss={actions.dismissOnboarding} />
+        )}
+
         <div className="empty-state">
           <h2>Welcome to FourSquare</h2>
           <p>Prioritize your tasks by urgency and importance.</p>
@@ -450,6 +461,10 @@ function Matrix({ tasks, actions, matrixSettings, matrixName, matrixId, focusTim
         allTags={allTags}
       />
 
+      {!hasSeenOnboarding && (
+        <OnboardingBanner onDismiss={actions.dismissOnboarding} />
+      )}
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -457,23 +472,36 @@ function Matrix({ tasks, actions, matrixSettings, matrixName, matrixId, focusTim
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="matrix-grid">
-          {QUADRANT_IDS.map(qId => (
-            <QuadrantColumn
-              key={qId}
-              quadrantId={qId}
-              tasks={getQuadrantTasks(qId)}
-              completedTasks={getCompletedTasks(qId)}
-              actions={cardActions}
-              overdueCount={getOverdueCount(qId)}
-              limit={limits[qId]}
-              sortMode={sortModes[qId] || 'manual'}
-              onSortModeChange={actions.updateQuadrantSortMode}
-              selectMode={selectMode}
-              selectedIds={selectedIds}
-              onToggleSelect={onToggleSelect}
-            />
-          ))}
+        <div className="matrix-wrapper">
+          <div className="axis-col-labels">
+            <div className="axis-spacer" />
+            <div className="axis-label">URGENT</div>
+            <div className="axis-label">NOT URGENT</div>
+          </div>
+          <div className="matrix-with-row-labels">
+            <div className="axis-row-labels">
+              <div className="axis-row-label">IMPORTANT</div>
+              <div className="axis-row-label">NOT IMPORTANT</div>
+            </div>
+            <div className="matrix-grid">
+              {QUADRANT_IDS.map(qId => (
+                <QuadrantColumn
+                  key={qId}
+                  quadrantId={qId}
+                  tasks={getQuadrantTasks(qId)}
+                  completedTasks={getCompletedTasks(qId)}
+                  actions={cardActions}
+                  overdueCount={getOverdueCount(qId)}
+                  limit={limits[qId]}
+                  sortMode={sortModes[qId] || 'manual'}
+                  onSortModeChange={actions.updateQuadrantSortMode}
+                  selectMode={selectMode}
+                  selectedIds={selectedIds}
+                  onToggleSelect={onToggleSelect}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         <UnsortedTray

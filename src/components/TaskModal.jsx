@@ -17,10 +17,26 @@ function TaskModal({ task, defaultQuadrant, onSave, onClose, limits, tasks }) {
   const [subtasks, setSubtasks] = useState(task?.subtasks || [])
   const [subtaskInput, setSubtaskInput] = useState('')
   const [recurrence, setRecurrence] = useState(task?.recurrence?.pattern || '')
+  const [showDecider, setShowDecider] = useState(false)
+  const [isUrgent, setIsUrgent] = useState(null)
+  const [isImportant, setIsImportant] = useState(null)
 
   useEffect(() => {
     titleRef.current?.focus()
   }, [])
+
+  // Auto-select quadrant from decider
+  useEffect(() => {
+    if (isUrgent === null || isImportant === null) return
+    let target
+    if (isImportant && isUrgent) target = 'Q1'
+    else if (isImportant && !isUrgent) target = 'Q2'
+    else if (!isImportant && isUrgent) target = 'Q3'
+    else target = 'Q4'
+    if (!isQuadrantFull(target)) {
+      setQuadrant(target)
+    }
+  }, [isUrgent, isImportant])
 
   // Close on Escape
   useEffect(() => {
@@ -146,27 +162,85 @@ function TaskModal({ task, defaultQuadrant, onSave, onClose, limits, tasks }) {
           </div>
 
           <div className="form-group">
-            <label>Quadrant</label>
-            <div className="quadrant-options">
-              {QUADRANT_IDS.map(qId => {
-                const full = isQuadrantFull(qId)
-                const isCurrent = quadrant === qId
-                return (
-                  <button
-                    key={qId}
-                    type="button"
-                    className={`quadrant-option ${isCurrent ? `selected q-${qId}` : ''} ${full && !isCurrent ? 'disabled-quadrant' : ''}`}
-                    onClick={() => { if (!full || isCurrent) setQuadrant(qId) }}
-                    disabled={full && !isCurrent}
-                  >
-                    <div className="quadrant-option-label">{QUADRANTS[qId].label}</div>
-                    <div className="quadrant-option-meaning">
-                      {full && !isCurrent ? 'Full' : QUADRANTS[qId].meaning}
-                    </div>
-                  </button>
-                )
-              })}
+            <div className="quadrant-label-row">
+              <label>Quadrant</label>
+              <button
+                type="button"
+                className="help-decide-toggle"
+                onClick={() => {
+                  setShowDecider(!showDecider)
+                  if (showDecider) { setIsUrgent(null); setIsImportant(null) }
+                }}
+              >
+                {showDecider ? 'Pick manually' : 'Not sure? Help me decide'}
+              </button>
             </div>
+            {showDecider ? (
+              <div className="help-decider">
+                <div className="decider-question">
+                  <div className="decider-q-text">
+                    Is this <strong>important</strong>?
+                    <span className="decider-hint">Does it contribute to your long-term goals or values?</span>
+                  </div>
+                  <div className="decider-btns">
+                    <button
+                      type="button"
+                      className={`decider-btn ${isImportant === true ? 'selected' : ''}`}
+                      onClick={() => setIsImportant(true)}
+                    >Yes</button>
+                    <button
+                      type="button"
+                      className={`decider-btn ${isImportant === false ? 'selected' : ''}`}
+                      onClick={() => setIsImportant(false)}
+                    >No</button>
+                  </div>
+                </div>
+                <div className="decider-question">
+                  <div className="decider-q-text">
+                    Is this <strong>urgent</strong>?
+                    <span className="decider-hint">Does it need to be done right now or very soon?</span>
+                  </div>
+                  <div className="decider-btns">
+                    <button
+                      type="button"
+                      className={`decider-btn ${isUrgent === true ? 'selected' : ''}`}
+                      onClick={() => setIsUrgent(true)}
+                    >Yes</button>
+                    <button
+                      type="button"
+                      className={`decider-btn ${isUrgent === false ? 'selected' : ''}`}
+                      onClick={() => setIsUrgent(false)}
+                    >No</button>
+                  </div>
+                </div>
+                {isUrgent !== null && isImportant !== null && (
+                  <div className="decider-result">
+                    {QUADRANTS[quadrant].label} — {QUADRANTS[quadrant].meaning}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="quadrant-options">
+                {QUADRANT_IDS.map(qId => {
+                  const full = isQuadrantFull(qId)
+                  const isCurrent = quadrant === qId
+                  return (
+                    <button
+                      key={qId}
+                      type="button"
+                      className={`quadrant-option ${isCurrent ? `selected q-${qId}` : ''} ${full && !isCurrent ? 'disabled-quadrant' : ''}`}
+                      onClick={() => { if (!full || isCurrent) setQuadrant(qId) }}
+                      disabled={full && !isCurrent}
+                    >
+                      <div className="quadrant-option-label">{QUADRANTS[qId].label}</div>
+                      <div className="quadrant-option-meaning">
+                        {full && !isCurrent ? 'Full' : QUADRANTS[qId].meaning}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           <div className="form-row">

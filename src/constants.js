@@ -32,11 +32,18 @@ export const MATRIX_ICONS = [
 ]
 
 export const EMPTY_MESSAGES = {
-  Q1: 'Nothing on fire. Good.',
-  Q2: 'Plan something important.',
-  Q3: 'Nothing to hand off.',
-  Q4: 'Clean slate.',
-  UNSORTED: 'All sorted.'
+  Q1: 'Urgent & important tasks go here — crises, deadlines, emergencies.',
+  Q2: 'Important but not urgent — goals, planning, personal growth.',
+  Q3: 'Urgent but less important — delegate or batch these.',
+  Q4: 'Distractions and time-wasters to minimize or cut.',
+  UNSORTED: 'All sorted. Add a task to triage it here.'
+}
+
+export const QUADRANT_TOOLTIPS = {
+  Q1: 'Tasks that need immediate attention — e.g. a client deadline tomorrow, a server outage, a sick-day pickup.',
+  Q2: 'High-value work you plan ahead — e.g. learning a new skill, writing a proposal, exercising regularly.',
+  Q3: 'Interruptions that feel urgent but aren\'t yours to own — e.g. most emails, some meetings, favors you could delegate.',
+  Q4: 'Low-value activities to cut — e.g. mindless scrolling, unnecessary meetings, busy-work with no outcome.'
 }
 
 export const DEFAULT_MATRIX_SETTINGS = {
@@ -62,6 +69,7 @@ export const DEFAULT_STATE = {
   activeMatrixId: null,
   matrices: [],
   settings: {
-    theme: 'dark'
+    theme: 'dark',
+    hasSeenOnboarding: false
   }
 }

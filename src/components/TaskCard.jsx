@@ -59,7 +59,7 @@ function TaskCard({ task, actions, isOverlay, dragDisabled, selectMode, isSelect
   } = useSortable({
     id: task.id,
     data: { task },
-    disabled: isOverlay || isCompleted || !!dragDisabled || selectMode
+    disabled: isOverlay || isCompleted || selectMode
   })
 
   useEffect(() => {
@@ -124,11 +124,14 @@ function TaskCard({ task, actions, isOverlay, dragDisabled, selectMode, isSelect
   const totalSubtasks = subtasks.length
   const allSubtasksDone = totalSubtasks > 0 && completedSubtasks === totalSubtasks
 
+  const isEliminated = task.quadrant === 'Q4' && !isCompleted
+
   const cardClass = [
     'task-card',
     isDragging && 'dragging',
     isOverlay && 'drag-overlay',
     isCompleted && 'completed-card',
+    isEliminated && 'eliminated-card',
     dueStatus === 'overdue' && !isCompleted && pulsed && 'overdue-pulse',
     dragDisabled && !isCompleted && 'no-drag',
     selectMode && isSelected && 'selected-card'

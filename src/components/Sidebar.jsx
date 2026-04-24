@@ -166,6 +166,13 @@ function Sidebar({ matrices, activeMatrixId, actions }) {
               <span className="nav-icon">⚙️</span>
               <span className="nav-text">Settings</span>
             </Link>
+            <Link
+              to="/guide"
+              className={`nav-item ${location.pathname === '/guide' ? 'active' : ''}`}
+            >
+              <span className="nav-icon">❓</span>
+              <span className="nav-text">How to Use</span>
+            </Link>
           </div>
         </nav>
       </div>

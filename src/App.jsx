@@ -6,6 +6,7 @@ import MatrixSettings from './components/MatrixSettings'
 import Insights from './components/Insights'
 import Settings from './components/Settings'
 import WeeklyReview from './components/WeeklyReview'
+import HowToUse from './components/HowToUse'
 import Toast from './components/Toast'
 import FocusTimer from './components/FocusTimer'
 import { useUndo } from './hooks/useUndo'
@@ -140,6 +141,14 @@ function App() {
       })
       return { ...prev, matrices: newMatrices }
     })
+  }, [])
+
+  // Onboarding
+  const dismissOnboarding = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      settings: { ...prev.settings, hasSeenOnboarding: true }
+    }))
   }, [])
 
   // Theme
@@ -682,6 +691,7 @@ function App() {
     bulkDeleteTasks,
     bulkUpdateTasks,
     addFocusMinutes,
+    dismissOnboarding,
     toggleTheme,
     setTheme,
     updateMatrixSettings,
@@ -764,6 +774,7 @@ function AppContent({ state, actions, limitError, toastMessage, setToastMessage,
               matrixName={activeMatrix?.name}
               matrixId={state.activeMatrixId}
               focusTimer={focusTimer}
+              hasSeenOnboarding={state.settings.hasSeenOnboarding}
             />
           } />
           <Route path="/matrix/:matrixId/settings" element={
@@ -794,6 +805,7 @@ function AppContent({ state, actions, limitError, toastMessage, setToastMessage,
               matrixId={state.activeMatrixId}
             />
           } />
+          <Route path="/guide" element={<HowToUse />} />
         </Routes>
       </main>
 
